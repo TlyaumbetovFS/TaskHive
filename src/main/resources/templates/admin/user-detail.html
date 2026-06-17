@@ -1,52 +1,53 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>User Management</title>
-</head>
+<head th:replace="~{fragments/layout :: head('User Management — TaskHive')}"></head>
 <body>
-<h1 th:text="'User: ' + ${user.email}">User</h1>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
 
-<p th:if="${success}" th:text="${success}" style="color: green;"></p>
+            <div class="card p-4">
+                <h4 class="mb-3" th:text="${user.email}">User</h4>
 
-<p><strong>ID:</strong> <span th:text="${user.userId}"></span></p>
-<p><strong>Display Name:</strong> <span th:text="${user.displayName ?: 'Not set'}"></span></p>
-<p><strong>Active:</strong> <span th:text="${user.active ? 'Yes' : 'No'}"></span></p>
-<p><strong>Created:</strong> <span th:text="${user.createdAt}"></span></p>
+                <div class="mb-2"><small class="text-muted-custom">ID</small><br/><span th:text="${user.userId}"></span></div>
+                <div class="mb-2"><small class="text-muted-custom">Display Name</small><br/><span th:text="${user.displayName ?: 'Not set'}"></span></div>
+                <div class="mb-2">
+                    <small class="text-muted-custom">Status</small><br/>
+                    <span class="badge" th:classappend="${user.active ? 'bg-success' : 'bg-danger'}" th:text="${user.active ? 'Active' : 'Inactive'}"></span>
+                </div>
+                <div class="mb-3"><small class="text-muted-custom">Created</small><br/><span th:text="${#temporals.format(user.createdAt, 'dd.MM.yyyy HH:mm')}"></span></div>
 
-<h3>Roles</h3>
-<ul>
-    <li th:each="role : ${roles}">
-        <span th:text="${role.globalRole.roleName}"></span>
-        <small th:text="'(since ' + ${role.validFrom} + ')'"></small>
-    </li>
-</ul>
-<p th:if="${#lists.isEmpty(roles)}">No roles assigned.</p>
+                <h6 class="text-muted-custom">Roles</h6>
+                <div class="mb-3">
+                    <span th:each="role : ${roles}" class="badge bg-dark me-1" th:text="${role.globalRole.roleName}"></span>
+                    <span th:if="${#lists.isEmpty(roles)}" class="text-muted-custom">No roles</span>
+                </div>
 
-<h3>Actions</h3>
+                <hr/>
+                <h6 class="text-muted-custom">Actions</h6>
+                <div class="d-flex gap-2 flex-wrap">
+                    <form th:if="${user.active}" th:action="@{/admin/users/{id}/deactivate(id=${user.userId})}" method="post">
+                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Deactivate?')">Deactivate</button>
+                    </form>
+                    <form th:if="${!user.active}" th:action="@{/admin/users/{id}/activate(id=${user.userId})}" method="post">
+                        <button type="submit" class="btn btn-sm btn-outline-success">Activate</button>
+                    </form>
+                    <form th:if="${!isAdmin}" th:action="@{/admin/users/{id}/grant-admin(id=${user.userId})}" method="post">
+                        <button type="submit" class="btn btn-sm btn-accent">Grant Admin</button>
+                    </form>
+                    <form th:if="${isAdmin}" th:action="@{/admin/users/{id}/revoke-admin(id=${user.userId})}" method="post">
+                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Revoke admin?')">Revoke Admin</button>
+                    </form>
+                </div>
+            </div>
 
-<div>
-    <form th:if="${user.active}"
-          th:action="@{/admin/users/{id}/deactivate(id=${user.userId})}" method="post" style="display: inline;">
-        <button type="submit" onclick="return confirm('Deactivate this user?')">Deactivate User</button>
-    </form>
-    <form th:if="${!user.active}"
-          th:action="@{/admin/users/{id}/activate(id=${user.userId})}" method="post" style="display: inline;">
-        <button type="submit">Activate User</button>
-    </form>
+            <a href="/admin" class="btn btn-link text-muted-custom mt-3 ps-0"><i class="bi bi-arrow-left"></i> Back to admin</a>
+        </div>
+    </div>
 </div>
-
-<div style="margin-top: 10px;">
-    <form th:if="${!isAdmin}"
-          th:action="@{/admin/users/{id}/grant-admin(id=${user.userId})}" method="post" style="display: inline;">
-        <button type="submit">Grant Admin</button>
-    </form>
-    <form th:if="${isAdmin}"
-          th:action="@{/admin/users/{id}/revoke-admin(id=${user.userId})}" method="post" style="display: inline;">
-        <button type="submit" onclick="return confirm('Revoke admin role?')">Revoke Admin</button>
-    </form>
-</div>
-
-<hr/>
-<a href="/admin">Back to admin panel</a>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:replace="~{fragments/layout :: scripts}"></script>
 </body>
 </html>

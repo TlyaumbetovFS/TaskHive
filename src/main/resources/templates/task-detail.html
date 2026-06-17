@@ -1,66 +1,106 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title th:text="${task.project.projectKey} + '-' + ${task.taskNumber} + ' ' + ${task.title}">Task</title>
-</head>
+<head th:replace="~{fragments/layout :: head(${task.project.projectKey} + '-' + ${task.taskNumber} + ' — TaskHive')}"></head>
 <body>
-<h1>
-    <span th:text="${task.project.projectKey} + '-' + ${task.taskNumber}"></span>:
-    <span th:text="${task.title}"></span>
-</h1>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div class="container">
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <small class="text-muted-custom" th:text="${task.project.projectKey} + '-' + ${task.taskNumber}"></small>
+            <h3 class="mb-0" th:text="${task.title}"></h3>
+        </div>
+        <div class="d-flex gap-2">
+            <a th:href="@{/workspaces/{wId}/projects/{pId}/tasks/{tId}/edit(wId=${workspaceId}, pId=${projectId}, tId=${task.taskId})}"
+               class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil"></i> Edit</a>
+            <form th:action="@{/workspaces/{wId}/projects/{pId}/tasks/{tId}/delete(wId=${workspaceId}, pId=${projectId}, tId=${task.taskId})}"
+                  method="post" style="display:inline;">
+                <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Delete this task?')"><i class="bi bi-trash"></i></button>
+            </form>
+        </div>
+    </div>
 
-<p><strong>Status:</strong> <span th:text="${task.status.name}"></span></p>
-<p><strong>Priority:</strong> <span th:text="${task.priority != null ? task.priority : 'None'}"></span></p>
-<p><strong>Assignee:</strong> <span th:text="${task.assignee != null ? task.assignee.email : 'Unassigned'}"></span></p>
-<p><strong>Creator:</strong> <span th:text="${task.creator.email}"></span></p>
-<p th:if="${task.description != null}"><strong>Description:</strong><br/> <span th:text="${task.description}"></span></p>
-<p><strong>Created:</strong> <span th:text="${task.createdAt}"></span></p>
+    <div class="row g-4">
+        <div class="col-md-8">
+            <!-- Description -->
+            <div class="card p-4 mb-3" th:if="${task.description != null}">
+                <h6 class="text-muted-custom mb-2">Description</h6>
+                <p class="mb-0" th:text="${task.description}"></p>
+            </div>
 
-<hr/>
+            <!-- Comments -->
+            <div class="card p-4">
+                <h6 class="text-muted-custom mb-3">Comments</h6>
+                <form th:action="@{/workspaces/{wId}/projects/{pId}/tasks/{tId}/comments(wId=${workspaceId}, pId=${projectId}, tId=${task.taskId})}"
+                      th:object="${commentDto}" method="post" class="mb-3">
+                    <textarea th:field="*{content}" class="form-control mb-2" rows="3" placeholder="Write a comment..."></textarea>
+                    <button type="submit" class="btn btn-accent btn-sm">Add Comment</button>
+                </form>
 
-<h3>Change Status</h3>
-<div th:if="${!#lists.isEmpty(allowedStatuses)}">
-    <form th:each="status : ${allowedStatuses}"
-          th:action="@{/workspaces/{wId}/projects/{pId}/tasks/{tId}/status(wId=${workspaceId}, pId=${projectId}, tId=${task.taskId})}"
-          method="post" style="display: inline;">
-        <input type="hidden" name="statusId" th:value="${status.statusId}"/>
-        <button type="submit" th:text="${status.name}"></button>
-    </form>
+                <div th:each="comment : ${comments}" class="border-top pt-3 mt-3">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <strong th:text="${comment.user.email}"></strong>
+                            <small class="text-muted-custom ms-2" th:text="${#temporals.format(comment.createdAt, 'dd.MM.yyyy HH:mm')}"></small>
+                        </div>
+                        <form th:action="@{/workspaces/{wId}/projects/{pId}/tasks/{tId}/comments/{cId}/delete(wId=${workspaceId}, pId=${projectId}, tId=${task.taskId}, cId=${comment.commentId})}"
+                              method="post">
+                            <button type="submit" class="btn btn-sm text-danger p-0" onclick="return confirm('Delete?')"><i class="bi bi-x-lg"></i></button>
+                        </form>
+                    </div>
+                    <p class="mb-0 mt-1" th:text="${comment.content}"></p>
+                </div>
+                <p th:if="${#lists.isEmpty(comments)}" class="text-muted-custom mb-0">No comments yet.</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Details sidebar -->
+            <div class="card p-4 mb-3">
+                <h6 class="text-muted-custom mb-3">Details</h6>
+                <div class="mb-2">
+                    <small class="text-muted-custom d-block">Status</small>
+                    <span class="badge badge-status" th:classappend="'badge-' + ${task.status.name}" th:text="${task.status.name}"></span>
+                </div>
+                <div class="mb-2">
+                    <small class="text-muted-custom d-block">Priority</small>
+                    <span th:if="${task.priority != null}" class="badge badge-status" th:classappend="'badge-' + ${task.priority}" th:text="${task.priority}"></span>
+                    <span th:if="${task.priority == null}">None</span>
+                </div>
+                <div class="mb-2">
+                    <small class="text-muted-custom d-block">Assignee</small>
+                    <span th:text="${task.assignee != null ? task.assignee.email : 'Unassigned'}"></span>
+                </div>
+                <div class="mb-2">
+                    <small class="text-muted-custom d-block">Creator</small>
+                    <span th:text="${task.creator.email}"></span>
+                </div>
+                <div>
+                    <small class="text-muted-custom d-block">Created</small>
+                    <span th:text="${#temporals.format(task.createdAt, 'dd.MM.yyyy HH:mm')}"></span>
+                </div>
+            </div>
+
+            <!-- Status transitions -->
+            <div class="card p-4" th:if="${!#lists.isEmpty(allowedStatuses)}">
+                <h6 class="text-muted-custom mb-3">Move to</h6>
+                <div class="d-grid gap-2">
+                    <form th:each="status : ${allowedStatuses}"
+                          th:action="@{/workspaces/{wId}/projects/{pId}/tasks/{tId}/status(wId=${workspaceId}, pId=${projectId}, tId=${task.taskId})}"
+                          method="post">
+                        <input type="hidden" name="statusId" th:value="${status.statusId}"/>
+                        <button type="submit" class="btn btn-sm w-100" th:classappend="'btn-outline-secondary'"
+                                th:text="${status.name}"></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <a th:href="@{/workspaces/{wId}/projects/{pId}(wId=${workspaceId}, pId=${projectId})}" class="btn btn-link text-muted-custom mt-4 ps-0">
+        <i class="bi bi-arrow-left"></i> Back to tasks
+    </a>
 </div>
-<p th:if="${#lists.isEmpty(allowedStatuses)}">No available transitions.</p>
-
-<hr/>
-
-<a th:href="@{/workspaces/{wId}/projects/{pId}/tasks/{tId}/edit(wId=${workspaceId}, pId=${projectId}, tId=${task.taskId})}">Edit Task</a>
-|
-<form th:action="@{/workspaces/{wId}/projects/{pId}/tasks/{tId}/delete(wId=${workspaceId}, pId=${projectId}, tId=${task.taskId})}"
-      method="post" style="display: inline;">
-    <button type="submit" onclick="return confirm('Delete this task?')">Delete Task</button>
-</form>
-
-<hr/>
-
-<h3>Comments</h3>
-<form th:action="@{/workspaces/{wId}/projects/{pId}/tasks/{tId}/comments(wId=${workspaceId}, pId=${projectId}, tId=${task.taskId})}"
-      th:object="${commentDto}" method="post">
-    <textarea th:field="*{content}" rows="3" cols="60" placeholder="Write a comment..."></textarea>
-    <br/>
-    <button type="submit">Add Comment</button>
-</form>
-
-<div th:each="comment : ${comments}" style="border: 1px solid #ccc; padding: 8px; margin: 8px 0;">
-    <strong th:text="${comment.user.email}"></strong>
-    <small th:text="${comment.createdAt}"></small>
-    <form th:action="@{/workspaces/{wId}/projects/{pId}/tasks/{tId}/comments/{cId}/delete(wId=${workspaceId}, pId=${projectId}, tId=${task.taskId}, cId=${comment.commentId})}"
-          method="post" style="display: inline; float: right;">
-        <button type="submit" onclick="return confirm('Delete comment?')">x</button>
-    </form>
-    <p th:text="${comment.content}"></p>
-</div>
-
-<p th:if="${#lists.isEmpty(comments)}">No comments yet.</p>
-
-<hr/>
-<a th:href="@{/workspaces/{wId}/projects/{pId}(wId=${workspaceId}, pId=${projectId})}">Back to tasks</a>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:replace="~{fragments/layout :: scripts}"></script>
 </body>
 </html>

@@ -1,0 +1,78 @@
+:root {
+    --th-accent: #F5CC00;
+    --th-accent-hover: #e0b800;
+    --th-gray: #B0B0B0;
+    --th-bg: #F5F5F5;
+    --th-dark: #2D2D2D;
+}
+
+body {
+    background-color: var(--th-bg);
+    color: var(--th-dark);
+}
+
+/* Navbar */
+.navbar { background-color: var(--th-dark) !important; }
+.navbar-brand { color: var(--th-accent) !important; font-weight: 700; letter-spacing: 1px; }
+.navbar-brand:hover { color: #fff !important; }
+.nav-link { color: #ccc !important; }
+.nav-link:hover { color: var(--th-accent) !important; }
+
+/* Accent buttons */
+.btn-accent {
+    background-color: var(--th-accent);
+    border-color: var(--th-accent);
+    color: var(--th-dark);
+    font-weight: 600;
+}
+.btn-accent:hover {
+    background-color: var(--th-accent-hover);
+    border-color: var(--th-accent-hover);
+    color: var(--th-dark);
+}
+.btn-outline-accent {
+    border-color: var(--th-accent);
+    color: var(--th-dark);
+}
+.btn-outline-accent:hover {
+    background-color: var(--th-accent);
+    color: var(--th-dark);
+}
+
+/* Cards */
+.card { border: none; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08); }
+
+/* Status badges */
+.badge-status { font-size: 0.8rem; padding: 4px 10px; border-radius: 12px; }
+.badge-BACKLOG { background-color: #B0B0B0; color: #fff; }
+.badge-TODO { background-color: #6c757d; color: #fff; }
+.badge-IN_PROGRESS { background-color: #0d6efd; color: #fff; }
+.badge-IN_REVIEW { background-color: #6f42c1; color: #fff; }
+.badge-DONE { background-color: #198754; color: #fff; }
+.badge-CANCELLED { background-color: #dc3545; color: #fff; }
+
+/* Priority badges */
+.badge-LOW { background-color: #198754; color: #fff; }
+.badge-MEDIUM { background-color: var(--th-accent); color: var(--th-dark); }
+.badge-HIGH { background-color: #fd7e14; color: #fff; }
+.badge-CRITICAL { background-color: #dc3545; color: #fff; }
+
+/* Muted text */
+.text-muted-custom { color: var(--th-gray) !important; }
+
+/* Tables */
+.table th {
+    color: var(--th-gray);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Workspace cards */
+.workspace-card { transition: transform 0.15s; cursor: pointer; }
+.workspace-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12); }
+.workspace-card .accent-bar { height: 4px; background-color: var(--th-accent); border-radius: 4px 4px 0 0; }
+
+/* Footer */
+footer { color: var(--th-gray); font-size: 0.85rem; }

@@ -1,21 +1,37 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head>
-    <title>Workspaces</title>
-</head>
+<head th:replace="~{fragments/layout :: head('Workspaces — TaskHive')}"></head>
 <body>
-<h1>My Workspaces</h1>
-<a href="/workspaces/create">Create Workspace</a>
-|
-<a sec:authorize="hasRole('ADMIN')" href="/admin">Admin Panel</a>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="mb-0">My Workspaces</h3>
+        <a href="/workspaces/create" class="btn btn-accent"><i class="bi bi-plus-lg"></i> New Workspace</a>
+    </div>
 
-<div th:each="workspace : ${workspaces}">
-    <a th:href="@{/workspaces/{id}(id=${workspace.workspaceId})}" th:text="${workspace.name}"></a>
+    <div th:if="${lastWorkspaceName != null}" class="alert alert-light border mb-3">
+        <i class="bi bi-clock-history"></i> Continue:
+        <a th:href="@{/workspaces/{id}(id=${lastWorkspaceId})}" th:text="${lastWorkspaceName}" class="fw-bold" style="color: var(--th-dark);"></a>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-sm-6 col-md-4 col-lg-3" th:each="workspace : ${workspaces}">
+            <a th:href="@{/workspaces/{id}(id=${workspace.workspaceId})}" class="text-decoration-none">
+                <div class="card workspace-card">
+                    <div class="accent-bar"></div>
+                    <div class="card-body">
+                        <h5 class="card-title mb-1" th:text="${workspace.name}" style="color: var(--th-dark);"></h5>
+                        <small class="text-muted-custom" th:text="'Owner: ' + ${workspace.owner.email}"></small>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <p th:if="${#lists.isEmpty(workspaces)}" class="text-muted-custom mt-4">No workspaces yet. Create your first one!</p>
 </div>
-<p th:if="${#lists.isEmpty(workspaces)}">No workspaces yet.</p>
-<form th:action="@{/logout}" method="post">
-    <button type="submit">Logout</button>
-</form>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:replace="~{fragments/layout :: scripts}"></script>
 </body>
 </html>

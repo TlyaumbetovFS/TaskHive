@@ -1,28 +1,39 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Create Project</title>
-</head>
+<head th:replace="~{fragments/layout :: head('Create Project — TaskHive')}"></head>
 <body>
-<h1>Create Project</h1>
-<p th:if="${error}" th:text="${error}" style="color: red;"></p>
-<form th:action="@{/workspaces/{id}/projects/create(id=${workspaceId})}" th:object="${projectDto}" method="post">
-    <div>
-        <label>Name:</label>
-        <input type="text" th:field="*{name}"/>
-        <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" style="color: red;"></span>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card p-4">
+                <h4 class="mb-3">Create Project</h4>
+                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+                <form th:action="@{/workspaces/{id}/projects/create(id=${workspaceId})}" th:object="${projectDto}" method="post">
+                    <div class="mb-3">
+                        <label class="form-label">Project Name</label>
+                        <input type="text" th:field="*{name}" class="form-control" required/>
+                        <div th:if="${#fields.hasErrors('name')}" class="text-danger small" th:errors="*{name}"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Project Key <small class="text-muted-custom">(e.g. PROJ, BACK)</small></label>
+                        <input type="text" th:field="*{projectKey}" class="form-control" style="text-transform: uppercase;" required/>
+                        <div th:if="${#fields.hasErrors('projectKey')}" class="text-danger small" th:errors="*{projectKey}"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea th:field="*{description}" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-accent">Create</button>
+                        <a th:href="@{/workspaces/{id}(id=${workspaceId})}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-    <div>
-        <label>Project Key (e.g. PROJ, BACK):</label>
-        <input type="text" th:field="*{projectKey}" style="text-transform: uppercase;"/>
-        <span th:if="${#fields.hasErrors('projectKey')}" th:errors="*{projectKey}" style="color: red;"></span>
-    </div>
-    <div>
-        <label>Description:</label>
-        <textarea th:field="*{description}"></textarea>
-    </div>
-    <button type="submit">Create</button>
-</form>
-<a th:href="@{/workspaces/{id}(id=${workspaceId})}">Back</a>
+</div>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:replace="~{fragments/layout :: scripts}"></script>
 </body>
 </html>

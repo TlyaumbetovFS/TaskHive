@@ -1,32 +1,48 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Create Task</title>
-</head>
+<head th:replace="~{fragments/layout :: head('Create Task — TaskHive')}"></head>
 <body>
-<h1>Create Task</h1>
-<form th:action="@{/workspaces/{wId}/projects/{pId}/tasks/create(wId=${workspaceId}, pId=${projectId})}" th:object="${taskDto}" method="post">
-    <div>
-        <label>Title:</label>
-        <input type="text" th:field="*{title}">
-        <span th:if="${#fields.hasErrors('title')}" th:errors="*{title}" style="color: red;"></span>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card p-4">
+                <h4 class="mb-3">Create Task</h4>
+                <form th:action="@{/workspaces/{wId}/projects/{pId}/tasks/create(wId=${workspaceId}, pId=${projectId})}"
+                      th:object="${taskDto}" method="post">
+                    <div class="mb-3">
+                        <label class="form-label">Title</label>
+                        <input type="text" th:field="*{title}" class="form-control" required/>
+                        <div th:if="${#fields.hasErrors('title')}" class="text-danger small" th:errors="*{title}"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea th:field="*{description}" class="form-control" rows="4"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Priority</label>
+                        <select th:field="*{priority}" class="form-select">
+                            <option value="">— None —</option>
+                            <option value="LOW">Low</option>
+                            <option value="MEDIUM">Medium</option>
+                            <option value="HIGH">High</option>
+                            <option value="CRITICAL">Critical</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Assignee Email</label>
+                        <input type="email" th:field="*{assigneeEmail}" class="form-control"/>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-accent">Create</button>
+                        <a th:href="@{/workspaces/{wId}/projects/{pId}(wId=${workspaceId}, pId=${projectId})}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-    <div>
-        <label>Description:</label>
-        <textarea th:field="*{description}"></textarea>
-    </div>
-    <div>
-        <label>Priority:</label>
-        <select th:field="*{priority}">
-            <option value="">-- Select --</option>
-            <option value="LOW">Low</option>
-            <option value="MEDIUM">Medium</option>
-            <option value="HIGH">High</option>
-            <option value="CRITICAL">Critical</option>
-        </select>
-    </div>
-    <button type="submit">Create</button>
-</form>
-<a th:href="@{/workspaces/{wId}/projects/{pId}(wId=${workspaceId}, pId=${projectId})}">Back</a>
+</div>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:replace="~{fragments/layout :: scripts}"></script>
 </body>
 </html>

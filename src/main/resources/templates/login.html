@@ -1,22 +1,35 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Login</title>
-</head>
-<body>
-<p th:if="${param.error}" style="color: red;">Invalid email or password</p>
-<p th:if="${param.logout}" style="color: green;">You have been logged out</p>
-<h1>Login</h1>
-<form th:action="@{/login}" method="post">
-    <div>
-        <label>Email:</label>
-        <input type="email" name="username">
+<head th:replace="~{fragments/layout :: head('Login — TaskHive')}"></head>
+<body class="d-flex align-items-center" style="min-height: 100vh;">
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-5 col-lg-4">
+            <div class="text-center mb-4">
+                <h2><i class="bi bi-hexagon-fill" style="color: var(--th-accent);"></i> TaskHive</h2>
+            </div>
+            <div class="card p-4">
+                <h4 class="mb-3">Login</h4>
+                <div th:if="${param.error}" class="alert alert-danger py-2">Invalid email or password</div>
+                <div th:if="${param.logout}" class="alert alert-success py-2">You have been logged out</div>
+                <form th:action="@{/login}" method="post">
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="username" class="form-control" required autofocus/>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <input type="password" name="password" class="form-control" required/>
+                    </div>
+                    <button type="submit" class="btn btn-accent w-100">Login</button>
+                </form>
+                <p class="text-center mt-3 mb-0 text-muted-custom">
+                    No account? <a href="/register" style="color: var(--th-dark);">Register</a>
+                </p>
+            </div>
+        </div>
     </div>
-    <div>
-        <label>Password:</label>
-        <input type="password" name="password">
-    </div>
-    <button type="submit">Login</button>
-</form>
+</div>
+<script th:replace="~{fragments/layout :: scripts}"></script>
 </body>
 </html>

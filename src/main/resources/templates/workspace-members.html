@@ -1,48 +1,57 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Workspace Members</title>
-</head>
+<head th:replace="~{fragments/layout :: head('Members — TaskHive')}"></head>
 <body>
-<h1 th:text="'Members — ' + ${workspace.name}">Members</h1>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div class="container">
+    <h3 class="mb-1" th:text="'Members — ' + ${workspace.name}">Members</h3>
+    <small class="text-muted-custom">Manage workspace members</small>
 
-<p th:if="${error}" th:text="${error}" style="color: red;"></p>
+    <div th:if="${error}" class="alert alert-danger mt-3" th:text="${error}"></div>
 
-<div th:if="${isAdmin}">
-    <h3>Add Member</h3>
-    <form th:action="@{/workspaces/{id}/members(id=${workspaceId})}" th:object="${memberDto}" method="post">
-        <input type="email" th:field="*{email}" placeholder="user@example.com"/>
-        <button type="submit">Add</button>
-    </form>
+    <div th:if="${isAdmin}" class="card p-3 mt-4">
+        <h6>Add Member</h6>
+        <form th:action="@{/workspaces/{id}/members(id=${workspaceId})}" th:object="${memberDto}" method="post" class="d-flex gap-2">
+            <input type="email" th:field="*{email}" class="form-control" placeholder="user@example.com" required/>
+            <button type="submit" class="btn btn-accent">Add</button>
+        </form>
+    </div>
+
+    <div class="card mt-3">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Since</th>
+                        <th th:if="${isAdmin}">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="member : ${members}">
+                        <td th:text="${member.user.email}"></td>
+                        <td>
+                            <span class="badge" th:classappend="${member.role.name() == 'ADMIN' ? 'bg-dark' : 'bg-secondary'}"
+                                  th:text="${member.role}"></span>
+                        </td>
+                        <td class="text-muted-custom" th:text="${#temporals.format(member.validFrom, 'dd.MM.yyyy')}"></td>
+                        <td th:if="${isAdmin}">
+                            <form th:if="${member.role.name() != 'ADMIN'}"
+                                  th:action="@{/workspaces/{wId}/members/{mId}/remove(wId=${workspaceId}, mId=${member.workspaceMemberId})}"
+                                  method="post" style="display: inline;">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Remove this member?')">Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <a th:href="@{/workspaces/{id}(id=${workspaceId})}" class="btn btn-link text-muted-custom mt-3 ps-0"><i class="bi bi-arrow-left"></i> Back</a>
 </div>
-
-<h3>Current Members</h3>
-<table>
-    <thead>
-        <tr>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Since</th>
-            <th th:if="${isAdmin}">Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr th:each="member : ${members}">
-            <td th:text="${member.user.email}"></td>
-            <td th:text="${member.role}"></td>
-            <td th:text="${member.validFrom}"></td>
-            <td th:if="${isAdmin}">
-                <form th:if="${member.role.name() != 'ADMIN'}"
-                      th:action="@{/workspaces/{wId}/members/{mId}/remove(wId=${workspaceId}, mId=${member.workspaceMemberId})}"
-                      method="post" style="display: inline;">
-                    <button type="submit" onclick="return confirm('Remove this member?')">Remove</button>
-                </form>
-                <span th:if="${member.role.name() == 'ADMIN'}">Owner</span>
-            </td>
-        </tr>
-    </tbody>
-</table>
-
-<a th:href="@{/workspaces/{id}(id=${workspaceId})}">Back to workspace</a>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:replace="~{fragments/layout :: scripts}"></script>
 </body>
 </html>

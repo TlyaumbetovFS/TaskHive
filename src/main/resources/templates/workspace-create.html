@@ -1,18 +1,29 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Create Workspace</title>
-</head>
+<head th:replace="~{fragments/layout :: head('Create Workspace — TaskHive')}"></head>
 <body>
-<h1>Create Workspace</h1>
-<form th:action="@{/workspaces/create}" th:object="${workspaceDto}" method="post">
-    <div>
-        <label>Name:</label>
-        <input type="text" th:field="*{name}">
-        <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" style="color: red;"></span>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card p-4">
+                <h4 class="mb-3">Create Workspace</h4>
+                <form th:action="@{/workspaces/create}" th:object="${workspaceDto}" method="post">
+                    <div class="mb-3">
+                        <label class="form-label">Workspace Name</label>
+                        <input type="text" th:field="*{name}" class="form-control" required autofocus/>
+                        <div th:if="${#fields.hasErrors('name')}" class="text-danger small" th:errors="*{name}"></div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-accent">Create</button>
+                        <a href="/workspaces" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-    <button type="submit">Create</button>
-</form>
-<a href="/workspaces">Back to workspaces</a>
+</div>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:replace="~{fragments/layout :: scripts}"></script>
 </body>
 </html>

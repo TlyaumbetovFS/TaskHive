@@ -1,24 +1,36 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Registration</title>
-</head>
-<body>
-<p th:if="${error}" th:text="${error}" style="color: red;"></p>
-<h1>Registration</h1>
-<form th:action="@{/register}" th:object="${userRegistrationDto}" method="post">
-    <div>
-        <label>Email:</label>
-        <input type="email" th:field="*{email}">
-        <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}" style="color: red;"></span>
+<head th:replace="~{fragments/layout :: head('Register — TaskHive')}"></head>
+<body class="d-flex align-items-center" style="min-height: 100vh;">
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-5 col-lg-4">
+            <div class="text-center mb-4">
+                <h2><i class="bi bi-hexagon-fill" style="color: var(--th-accent);"></i> TaskHive</h2>
+            </div>
+            <div class="card p-4">
+                <h4 class="mb-3">Register</h4>
+                <div th:if="${error}" class="alert alert-danger py-2" th:text="${error}"></div>
+                <form th:action="@{/register}" th:object="${userRegistrationDto}" method="post">
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" th:field="*{email}" class="form-control" required/>
+                        <div th:if="${#fields.hasErrors('email')}" class="text-danger small" th:errors="*{email}"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <input type="password" th:field="*{password}" class="form-control" required/>
+                        <div th:if="${#fields.hasErrors('password')}" class="text-danger small" th:errors="*{password}"></div>
+                    </div>
+                    <button type="submit" class="btn btn-accent w-100">Register</button>
+                </form>
+                <p class="text-center mt-3 mb-0 text-muted-custom">
+                    Have an account? <a href="/login" style="color: var(--th-dark);">Login</a>
+                </p>
+            </div>
+        </div>
     </div>
-    <div>
-        <label>Password:</label>
-        <input type="password" th:field="*{password}">
-        <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}" style="color: red;"></span>
-
-    </div>
-    <button type="submit">Register</button>
-</form>
+</div>
+<script th:replace="~{fragments/layout :: scripts}"></script>
 </body>
 </html>

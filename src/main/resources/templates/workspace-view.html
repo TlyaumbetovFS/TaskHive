@@ -1,35 +1,54 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Workspace</title>
-</head>
+<head th:replace="~{fragments/layout :: head(${workspace.name} + ' — TaskHive')}"></head>
 <body>
-<h1>Projects</h1>
-<a th:href="@{/workspaces/{id}/projects/create(id=${workspaceId})}">Create Project</a>
-|
-<a th:href="@{/workspaces/{id}/members(id=${workspaceId})}">Members</a>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="mb-0" th:text="${workspace.name}">Workspace</h3>
+            <small class="text-muted-custom">Projects</small>
+        </div>
+        <div class="d-flex gap-2">
+            <a th:href="@{/workspaces/{id}/members(id=${workspaceId})}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-people"></i> Members
+            </a>
+            <a th:href="@{/workspaces/{id}/projects/create(id=${workspaceId})}" class="btn btn-accent btn-sm">
+                <i class="bi bi-plus-lg"></i> New Project
+            </a>
+        </div>
+    </div>
 
-<table th:if="${!#lists.isEmpty(projects)}">
-    <thead>
-        <tr>
-            <th>Key</th>
-            <th>Name</th>
-            <th>Description</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr th:each="project : ${projects}">
-            <td>
-                <a th:href="@{/workspaces/{wId}/projects/{pId}(wId=${workspaceId}, pId=${project.projectId})}"
-                   th:text="${project.projectKey}"></a>
-            </td>
-            <td th:text="${project.name}"></td>
-            <td th:text="${project.description}"></td>
-        </tr>
-    </tbody>
-</table>
+    <div class="card" th:if="${!#lists.isEmpty(projects)}">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Key</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="project : ${projects}">
+                        <td>
+                            <a th:href="@{/workspaces/{wId}/projects/{pId}(wId=${workspaceId}, pId=${project.projectId})}"
+                               class="fw-bold text-decoration-none" style="color: var(--th-dark);"
+                               th:text="${project.projectKey}"></a>
+                        </td>
+                        <td th:text="${project.name}"></td>
+                        <td class="text-muted-custom" th:text="${project.description ?: '-'}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-<p th:if="${#lists.isEmpty(projects)}">No projects yet.</p>
-<a href="/workspaces">Back to workspaces</a>
+    <p th:if="${#lists.isEmpty(projects)}" class="text-muted-custom mt-3">No projects yet.</p>
+
+    <a href="/workspaces" class="btn btn-link text-muted-custom mt-3 ps-0"><i class="bi bi-arrow-left"></i> Back to workspaces</a>
+</div>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:replace="~{fragments/layout :: scripts}"></script>
 </body>
 </html>

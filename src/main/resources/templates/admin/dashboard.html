@@ -1,37 +1,44 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Admin Panel</title>
-</head>
+<head th:replace="~{fragments/layout :: head('Admin Panel — TaskHive')}"></head>
 <body>
-<h1>Admin Panel</h1>
-<a href="/workspaces">Back to workspaces</a>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div class="container">
+    <h3 class="mb-4"><i class="bi bi-shield-lock"></i> Admin Panel</h3>
 
-<h2>All Users</h2>
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Email</th>
-            <th>Display Name</th>
-            <th>Active</th>
-            <th>Created</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr th:each="user : ${users}">
-            <td th:text="${user.userId}"></td>
-            <td th:text="${user.email}"></td>
-            <td th:text="${user.displayName ?: '-'}"></td>
-            <td th:text="${user.active ? 'Yes' : 'No'}"
-                th:style="${user.active ? '' : 'color: red;'}"></td>
-            <td th:text="${user.createdAt}"></td>
-            <td>
-                <a th:href="@{/admin/users/{id}(id=${user.userId})}">Manage</a>
-            </td>
-        </tr>
-    </tbody>
-</table>
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Email</th>
+                        <th>Display Name</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="user : ${users}">
+                        <td th:text="${user.userId}"></td>
+                        <td th:text="${user.email}"></td>
+                        <td th:text="${user.displayName ?: '—'}" th:class="${user.displayName == null ? 'text-muted-custom' : ''}"></td>
+                        <td>
+                            <span class="badge" th:classappend="${user.active ? 'bg-success' : 'bg-danger'}"
+                                  th:text="${user.active ? 'Active' : 'Inactive'}"></span>
+                        </td>
+                        <td class="text-muted-custom" th:text="${#temporals.format(user.createdAt, 'dd.MM.yyyy')}"></td>
+                        <td>
+                            <a th:href="@{/admin/users/{id}(id=${user.userId})}" class="btn btn-sm btn-outline-secondary">Manage</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:replace="~{fragments/layout :: scripts}"></script>
 </body>
 </html>
