@@ -57,7 +57,6 @@ public class WorkspaceController {
         if (result.hasErrors()) {
             return "workspace-create";
         }
-
         workspaceService.create(dto, principal.getName());
         return "redirect:/workspaces";
     }
