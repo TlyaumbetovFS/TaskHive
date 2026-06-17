@@ -1,9 +1,10 @@
 package com.taskhive.service;
 
 import com.taskhive.dto.TaskDto;
-import com.taskhive.dto.TaskEditDto;
 import com.taskhive.model.Task;
+import com.taskhive.model.TaskStateTransition;
 import com.taskhive.model.TaskStatus;
+import com.taskhive.model.User;
 import com.taskhive.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -36,12 +37,19 @@ public class TaskService {
 
         int nextNumber = taskRepository.findMaxTaskNumberByProject(projectId) + 1;
 
+        User assignee = null;
+        if (dto.getAssigneeEmail() != null && !dto.getAssigneeEmail().isBlank()) {
+            assignee = userRepository.findByEmail(dto.getAssigneeEmail())
+                    .orElseThrow(() -> new RuntimeException("Assignee not found"));
+        }
+
         var task = Task.builder()
                 .title(dto.getTitle())
                 .description(dto.getDescription())
                 .priority(dto.getPriority())
                 .project(project)
                 .creator(creator)
+                .assignee(assignee)
                 .status(status)
                 .taskNumber(nextNumber)
                 .build();
@@ -49,17 +57,19 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
+    @Transactional(readOnly = true)
     public Task getById(Long taskId) {
         return taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
     }
 
+    @Transactional(readOnly = true)
     public List<Task> getTasksByProjectId(Long projectId) {
         return taskRepository.findByProjectProjectId(projectId);
     }
 
     @Transactional
-    public Task update(Long taskId, TaskEditDto dto) {
+    public Task update(Long taskId, TaskDto dto) {
         var task = getById(taskId);
 
         task.setTitle(dto.getTitle());
@@ -102,10 +112,11 @@ public class TaskService {
         taskRepository.save(task);
     }
 
+    @Transactional(readOnly = true)
     public List<TaskStatus> getAllowedTransitions(Task task) {
         return taskStateTransitionRepository.findByFromStatus(task.getStatus())
                 .stream()
-                .map(t -> t.getToStatus())
+                .map(TaskStateTransition::getToStatus)
                 .toList();
     }
 }

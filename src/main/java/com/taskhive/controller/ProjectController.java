@@ -5,6 +5,7 @@ import com.taskhive.dto.WorkspaceMemberDto;
 import com.taskhive.model.ProjectRole;
 import com.taskhive.service.ProjectService;
 import com.taskhive.service.WorkspaceService;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -23,11 +24,16 @@ public class ProjectController {
     private final WorkspaceService workspaceService;
 
     @GetMapping("/workspaces/{workspaceId}")
-    public String show(@PathVariable Long workspaceId, Model model, Principal principal) {
+    public String show(@PathVariable Long workspaceId, Model model, Principal principal, HttpSession session) {
         workspaceService.checkMembership(workspaceId, principal.getName());
 
         var workspace = workspaceService.getById(workspaceId);
         var projects = projectService.getProjectsByWorkspace(workspaceId);
+
+        // SESSION: remember last visited workspace
+        session.setAttribute("lastWorkspaceId", workspace.getWorkspaceId());
+        session.setAttribute("lastWorkspaceName", workspace.getName());
+
         model.addAttribute("workspace", workspace);
         model.addAttribute("projects", projects);
         model.addAttribute("workspaceId", workspaceId);
@@ -45,8 +51,7 @@ public class ProjectController {
 
     @PostMapping("/workspaces/{workspaceId}/projects/create")
     public String create(@PathVariable Long workspaceId, @Valid @ModelAttribute ProjectDto dto,
-                         BindingResult result, Model model, Principal principal,
-                         RedirectAttributes redirectAttributes) {
+                         BindingResult result, Model model, Principal principal) {
         workspaceService.checkMembership(workspaceId, principal.getName());
 
         if (result.hasErrors()) {

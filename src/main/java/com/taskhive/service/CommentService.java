@@ -37,6 +37,7 @@ public class CommentService {
         return commentRepository.save(comment);
     }
 
+    @Transactional(readOnly = true)
     public List<Comment> getByTaskId(Long taskId) {
         return commentRepository.findByTaskTaskIdOrderByCreatedAtDesc(taskId);
     }

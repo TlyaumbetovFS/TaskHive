@@ -4,6 +4,10 @@ import com.taskhive.dto.WorkspaceDto;
 import com.taskhive.dto.WorkspaceMemberDto;
 import com.taskhive.model.WorkspaceRole;
 import com.taskhive.service.WorkspaceService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -13,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
+import java.util.Arrays;
 
 @Controller
 @RequiredArgsConstructor
@@ -21,9 +26,23 @@ public class WorkspaceController {
     private final WorkspaceService workspaceService;
 
     @GetMapping("/workspaces")
-    public String list(Model model, Principal principal) {
+    public String list(Model model, Principal principal, HttpSession session,
+                       HttpServletRequest request) {
         var workspaces = workspaceService.getWorkspacesByEmail(principal.getName());
         model.addAttribute("workspaces", workspaces);
+
+        // SESSION: show "continue where you left off" if last workspace exists
+        var lastId = (Long) session.getAttribute("lastWorkspaceId");
+        var lastName = (String) session.getAttribute("lastWorkspaceName");
+        if (lastId != null && lastName != null) {
+            model.addAttribute("lastWorkspaceId", lastId);
+            model.addAttribute("lastWorkspaceName", lastName);
+        }
+
+        // COOKIE: read items-per-page preference
+        var itemsPerPage = readCookie(request, "itemsPerPage", "10");
+        model.addAttribute("itemsPerPage", itemsPerPage);
+
         return "workspaces";
     }
 
@@ -44,12 +63,16 @@ public class WorkspaceController {
     }
 
     @GetMapping("/workspaces/{workspaceId}/members")
-    public String members(@PathVariable Long workspaceId, Model model, Principal principal) {
+    public String members(@PathVariable Long workspaceId, Model model, Principal principal, HttpSession session) {
         workspaceService.checkMembership(workspaceId, principal.getName());
 
         var workspace = workspaceService.getById(workspaceId);
         var members = workspaceService.getActiveMembers(workspaceId);
         var currentMembership = workspaceService.getMembership(workspaceId, principal.getName());
+
+        // SESSION: remember last visited workspace
+        session.setAttribute("lastWorkspaceId", workspace.getWorkspaceId());
+        session.setAttribute("lastWorkspaceName", workspace.getName());
 
         model.addAttribute("workspace", workspace);
         model.addAttribute("members", members);
@@ -96,7 +119,26 @@ public class WorkspaceController {
             return "redirect:/workspaces/" + workspaceId + "/members";
         }
 
-        workspaceService.removeMember(memberId);
+        workspaceService.removeMember(memberId, workspaceId);
         return "redirect:/workspaces/" + workspaceId + "/members";
+    }
+
+    // COOKIE: endpoint to set items per page preference
+    @PostMapping("/workspaces/preferences")
+    public String setPreferences(@RequestParam String itemsPerPage, HttpServletResponse response) {
+        var cookie = new Cookie("itemsPerPage", itemsPerPage);
+        cookie.setMaxAge(30 * 24 * 60 * 60); // 30 days
+        cookie.setPath("/");
+        response.addCookie(cookie);
+        return "redirect:/workspaces";
+    }
+
+    private String readCookie(HttpServletRequest request, String name, String defaultValue) {
+        if (request.getCookies() == null) return defaultValue;
+        return Arrays.stream(request.getCookies())
+                .filter(c -> c.getName().equals(name))
+                .map(Cookie::getValue)
+                .findFirst()
+                .orElse(defaultValue);
     }
 }

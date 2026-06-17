@@ -4,6 +4,8 @@ import com.taskhive.dto.WorkspaceDto;
 import com.taskhive.model.*;
 import com.taskhive.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,11 +40,13 @@ public class WorkspaceService {
         return workspace;
     }
 
+    @Transactional(readOnly = true)
     public Workspace getById(Long workspaceId) {
         return workspaceRepository.findById(workspaceId)
                 .orElseThrow(() -> new RuntimeException("Workspace not found"));
     }
 
+    @Transactional(readOnly = true)
     public void checkMembership(Long workspaceId, String email) {
         var workspace = getById(workspaceId);
         var user = userRepository.findByEmail(email)
@@ -51,6 +55,7 @@ public class WorkspaceService {
                 .orElseThrow(() -> new RuntimeException("Access denied: not a workspace member"));
     }
 
+    @Transactional(readOnly = true)
     public WorkspaceMember getMembership(Long workspaceId, String email) {
         var workspace = getById(workspaceId);
         var user = userRepository.findByEmail(email)
@@ -59,25 +64,37 @@ public class WorkspaceService {
                 .orElse(null);
     }
 
+    @Transactional(readOnly = true)
     public List<Workspace> getWorkspacesByEmail(String email) {
         return workspaceRepository.findByActiveMemberEmail(email);
     }
 
+    @Cacheable(value = "workspaceMembers", key = "#workspaceId")
+    @Transactional(readOnly = true)
     public List<WorkspaceMember> getActiveMembers(Long workspaceId) {
         var workspace = getById(workspaceId);
         return workspaceMemberRepository.findByWorkspaceAndValidToIsNull(workspace);
     }
 
+    @Cacheable(value = "workspaceStatuses", key = "#workspaceId")
+    @Transactional(readOnly = true)
+    public List<TaskStatus> getStatuses(Long workspaceId) {
+        var workspace = getById(workspaceId);
+        return taskStatusRepository.findByWorkspaceOrderBySortOrder(workspace);
+    }
+
+    @CacheEvict(value = "workspaceMembers", key = "#workspaceId")
     @Transactional
     public void addMember(Long workspaceId, String email) {
         var workspace = getById(workspaceId);
         var user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        var existing = workspaceMemberRepository
-                .findByWorkspaceAndUserAndValidToIsNull(workspace, user);
+        var alreadyMember = workspaceMemberRepository
+                .findByWorkspaceAndUserAndValidToIsNull(workspace, user)
+                .isPresent();
 
-        if (existing.isPresent()) {
+        if (alreadyMember) {
             throw new RuntimeException("User is already a member");
         }
 
@@ -92,7 +109,7 @@ public class WorkspaceService {
     }
 
     @Transactional
-    public void removeMember(Long memberId) {
+    public void removeMember(Long memberId, Long workspaceId) {
         var member = workspaceMemberRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("Member not found"));
 

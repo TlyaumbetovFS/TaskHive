@@ -7,6 +7,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.security.Principal;
+
 @Controller
 @RequestMapping("/admin")
 @RequiredArgsConstructor
@@ -32,7 +34,14 @@ public class AdminController {
     }
 
     @PostMapping("/users/{userId}/deactivate")
-    public String deactivate(@PathVariable Long userId, RedirectAttributes redirectAttributes) {
+    public String deactivate(@PathVariable Long userId, RedirectAttributes redirectAttributes,
+                             Principal principal) {
+        var user = userService.getById(userId);
+        if (user.getEmail().equals(principal.getName())) {
+            redirectAttributes.addFlashAttribute("error", "Cannot deactivate your own account");
+            return "redirect:/admin/users/" + userId;
+        }
+
         userService.deactivate(userId);
         redirectAttributes.addFlashAttribute("success", "User deactivated");
         return "redirect:/admin/users/" + userId;
@@ -54,7 +63,14 @@ public class AdminController {
     }
 
     @PostMapping("/users/{userId}/revoke-admin")
-    public String revokeAdmin(@PathVariable Long userId, RedirectAttributes redirectAttributes) {
+    public String revokeAdmin(@PathVariable Long userId, RedirectAttributes redirectAttributes,
+                              Principal principal) {
+        var user = userService.getById(userId);
+        if (user.getEmail().equals(principal.getName())) {
+            redirectAttributes.addFlashAttribute("error", "Cannot revoke your own admin role");
+            return "redirect:/admin/users/" + userId;
+        }
+
         userService.revokeRole(userId, "ADMIN");
         redirectAttributes.addFlashAttribute("success", "Admin role revoked");
         return "redirect:/admin/users/" + userId;

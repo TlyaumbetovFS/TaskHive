@@ -2,11 +2,14 @@ package com.taskhive.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 
 @Entity
 @Table(name = "task_audit_logs")
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
 @Builder
@@ -37,11 +40,7 @@ public class TaskAuditLog {
     @Column(name = "new_value", columnDefinition = "TEXT", updatable = false)
     private String newValue;
 
+    @CreatedDate
     @Column(name = "changed_at", nullable = false, updatable = false)
     private Instant changedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        changedAt = Instant.now();
-    }
 }

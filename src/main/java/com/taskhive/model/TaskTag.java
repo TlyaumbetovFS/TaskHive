@@ -2,6 +2,8 @@ package com.taskhive.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 
@@ -9,6 +11,7 @@ import java.time.Instant;
 @Table(name = "task_tags", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"task_id", "tag_id"})
 })
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
 @Builder
@@ -29,11 +32,7 @@ public class TaskTag {
     @JoinColumn(name = "tag_id", nullable = false, updatable = false)
     private Tag tag;
 
+    @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = Instant.now();
-    }
 }

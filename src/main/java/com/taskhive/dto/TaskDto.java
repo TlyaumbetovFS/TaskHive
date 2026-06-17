@@ -16,4 +16,6 @@ public class TaskDto {
     private String description;
 
     private TaskPriority priority;
+
+    private String assigneeEmail;
 }

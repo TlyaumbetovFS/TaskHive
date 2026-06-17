@@ -1,6 +1,5 @@
 package com.taskhive.controller;
 
-import com.taskhive.dto.UserLoginDto;
 import com.taskhive.dto.UserRegistrationDto;
 import com.taskhive.service.UserService;
 import jakarta.validation.Valid;
@@ -40,8 +39,7 @@ public class AuthController {
     }
 
     @GetMapping("/login")
-    public String showLoginForm(Model model) {
-        model.addAttribute("userLoginDto", new UserLoginDto());
+    public String showLoginForm() {
         return "login";
     }
 }

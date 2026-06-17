@@ -36,16 +36,17 @@ public class UserService {
                 .build();
 
         user = userRepository.save(user);
-
         assignRole(user, "USER");
 
         return user;
     }
 
+    @Transactional(readOnly = true)
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
+    @Transactional(readOnly = true)
     public User getById(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -70,11 +71,11 @@ public class UserService {
         var role = globalRoleRepository.findByRoleName(roleName)
                 .orElseThrow(() -> new RuntimeException("Role not found: " + roleName));
 
-        var existing = userGlobalRoleRepository.findByUserAndValidToIsNull(user)
+        boolean alreadyHasRole = userGlobalRoleRepository.findByUserAndValidToIsNull(user)
                 .stream()
                 .anyMatch(ugr -> ugr.getGlobalRole().getRoleName().equals(roleName));
 
-        if (!existing) {
+        if (!alreadyHasRole) {
             var userRole = UserGlobalRole.builder()
                     .user(user)
                     .globalRole(role)
@@ -94,10 +95,12 @@ public class UserService {
                 });
     }
 
+    @Transactional(readOnly = true)
     public List<UserGlobalRole> getActiveRoles(User user) {
         return userGlobalRoleRepository.findByUserAndValidToIsNull(user);
     }
 
+    @Transactional(readOnly = true)
     public boolean hasRole(User user, String roleName) {
         return userGlobalRoleRepository.findByUserAndValidToIsNull(user).stream()
                 .anyMatch(ugr -> ugr.getGlobalRole().getRoleName().equals(roleName));

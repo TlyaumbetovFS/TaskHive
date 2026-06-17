@@ -2,7 +2,6 @@ package com.taskhive.controller;
 
 import com.taskhive.dto.CommentDto;
 import com.taskhive.dto.TaskDto;
-import com.taskhive.dto.TaskEditDto;
 import com.taskhive.service.CommentService;
 import com.taskhive.service.ProjectService;
 import com.taskhive.service.TaskService;
@@ -91,14 +90,14 @@ public class TaskController {
 
         var task = taskService.getById(taskId);
 
-        var editDto = TaskEditDto.builder()
+        var editDto = TaskDto.builder()
                 .title(task.getTitle())
                 .description(task.getDescription())
                 .priority(task.getPriority())
                 .assigneeEmail(task.getAssignee() != null ? task.getAssignee().getEmail() : null)
                 .build();
 
-        model.addAttribute("taskEditDto", editDto);
+        model.addAttribute("taskDto", editDto);
         model.addAttribute("task", task);
         model.addAttribute("workspaceId", workspaceId);
         model.addAttribute("projectId", projectId);
@@ -108,7 +107,7 @@ public class TaskController {
 
     @PostMapping("/workspaces/{workspaceId}/projects/{projectId}/tasks/{taskId}/edit")
     public String update(@PathVariable Long workspaceId, @PathVariable Long projectId,
-                         @PathVariable Long taskId, @Valid @ModelAttribute TaskEditDto dto,
+                         @PathVariable Long taskId, @Valid @ModelAttribute TaskDto dto,
                          BindingResult result, Model model, Principal principal) {
         workspaceService.checkMembership(workspaceId, principal.getName());
 

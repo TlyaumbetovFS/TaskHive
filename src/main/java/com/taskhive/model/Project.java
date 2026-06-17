@@ -3,6 +3,9 @@ package com.taskhive.model;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLRestriction;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 
@@ -10,6 +13,7 @@ import java.time.Instant;
 @Table(name = "projects", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"workspace_id", "project_key"})
 })
+@EntityListeners(AuditingEntityListener.class)
 @SQLRestriction("deleted_at IS NULL")
 @Getter
 @Setter
@@ -40,22 +44,14 @@ public class Project {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
+    @LastModifiedDate
     @Column(name = "updated_at")
     private Instant updatedAt;
 
     @Column(name = "deleted_at")
     private Instant deletedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = Instant.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = Instant.now();
-    }
 }
